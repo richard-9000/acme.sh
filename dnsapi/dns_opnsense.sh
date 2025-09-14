@@ -150,7 +150,7 @@ _get_root() {
       return 1
     fi
     _debug h "$h"
-    id=$(echo "$_domain_response" | _egrep_o "\"uuid\":\"[a-z0-9\-]*\",\"enabled\":\"1\",\"type\":\"primary\",\"domainname\":\"${h}\"" | cut -d ':' -f 2 | cut -d '"' -f 2)
+    id=$(echo "$_domain_response" | _egrep_o "\"uuid\":\"[a-z0-9\-]*\",\"enabled\":\"1\",\"type\":\"primary\",[^}]*\"domainname\":\"${h}\"" | cut -d ':' -f 2 | cut -d '"' -f 2)
     if [ -n "$id" ]; then
       _debug id "$id"
       _host=$(printf "%s" "$domain" | cut -d . -f 1-"$p")
@@ -176,7 +176,7 @@ _opns_rest() {
 
   opnsense_url="https://${key}:${token}@${OPNs_Host}:${OPNs_Port:-$OPNs_DefaultPort}/api/bind${ep}"
   export _H1="Content-Type: application/json"
-  _debug2 "Try to call api: https://${OPNs_Host}:${OPNs_Port:-$OPNs_DefaultPort}/api/bind${ep}"
+  _debug "Try to call api: https://${OPNs_Host}:${OPNs_Port:-$OPNs_DefaultPort}/api/bind${ep}"
   if [ ! "$method" = "GET" ]; then
     _debug data "$data"
     export _H1="Content-Type: application/json"
@@ -190,7 +190,7 @@ _opns_rest() {
     _err "error $ep"
     return 1
   fi
-  _debug2 response "$response"
+  _debug response "$response"
 
   return 0
 }
@@ -206,13 +206,13 @@ _existingchallenge() {
     return 1
   fi
   _uuid=""
-  _uuid=$(echo "$_record_response" | _egrep_o "\"uuid\":\"[^\"]*\",\"enabled\":\"[01]\",\"domain\":\"$1\",\"name\":\"$2\",\"type\":\"TXT\",\"value\":\"$3\"" | cut -d ':' -f 2 | cut -d '"' -f 2)
+  _uuid=$(echo "$_record_response" | _egrep_o "\"uuid\":\"[^\"]*\",\"enabled\":\"[01]\",[^}]*\"%domain\":\"$1\",\"name\":\"$2\",\"type\":\"TXT\",\"value\":\"$3\"" | cut -d ':' -f 2 | cut -d '"' -f 2)
 
   if [ -n "$_uuid" ]; then
     _debug uuid "$_uuid"
     return 0
   fi
-  _debug "${2}.$1{1} record not found"
+  _debug "${2}.$1{1} record not found ${__USE_EGREP} ..."
 
   return 1
 }
